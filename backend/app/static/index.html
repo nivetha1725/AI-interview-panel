@@ -1,0 +1,126 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Mock Interview Panel</title>
+<style>
+:root{--bg:#f3f1ee;--card:#fff;--ink:#1c1f24;--mute:#6b7280;--line:#dcd8d2;--acc:#3b6fd4}
+@media(prefers-color-scheme:dark){:root{--bg:#14171c;--card:#1d2128;--ink:#e9ecef;--mute:#9aa3ad;--line:#2f353e}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,serif}
+main{max-width:860px;margin:0 auto;padding:20px}
+h1,h2,h3,button,label,input,select,textarea,.ui{font-family:system-ui,sans-serif}
+nav{display:flex;gap:8px;align-items:center;margin-bottom:20px}nav b{flex:1;font:600 18px system-ui}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:14px}
+button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px;border-radius:8px;cursor:pointer;font-size:14px}
+button.p{background:var(--acc);color:#fff;border-color:var(--acc)}button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 3px}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font-size:15px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}@media(max-width:600px){.g{grid-template-columns:1fr}}
+.hide{display:none}.mute{color:var(--mute);font-size:14px}.err{color:#c0392b;font:14px system-ui}
+.avatar{width:96px;height:96px;border-radius:50%;margin:0 auto 8px;display:grid;place-items:center;font:700 34px system-ui;color:#fff;background:var(--pc,var(--acc))}
+.avatar.speaking{animation:pulse 1s infinite}.avatar.listening{box-shadow:0 0 0 8px color-mix(in srgb,var(--pc) 30%,transparent)}
+@keyframes pulse{50%{transform:scale(1.07)}}@media(prefers-reduced-motion:reduce){.avatar{animation:none!important}}
+.q{font-size:22px;text-align:center;margin:8px 0}.st{text-align:center;font:14px system-ui;color:var(--mute);min-height:20px}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc)}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0}.rec{background:#d64545!important;color:#fff!important}
+.meta{display:flex;justify-content:space-between;font:14px system-ui;color:var(--mute);margin-bottom:6px}
+.cat{display:grid;grid-template-columns:170px 1fr 40px;gap:8px;align-items:center;font:14px system-ui;margin:6px 0}
+table{width:100%;border-collapse:collapse;font:14px system-ui}td,th{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+tr.c{cursor:pointer}.big{font:700 52px system-ui}
+</style></head><body><main>
+<nav><b>AI Mock Interview Panel</b><button onclick="show('setup')">New interview</button><button onclick="hist()">History</button><button onclick="diversity()">Test Persona Diversity</button></nav>
+<p class="mute ui" id="banner"></p>
+
+<section id="setup" class="card"><h2>Set up your interview</h2>
+<div class="g">
+<div><label>Your name</label><input id="cand" value="Demo Candidate"></div>
+<div><label>Target role</label><select id="role"><option>Software Engineer<option>Frontend Developer<option>Backend Developer<option>Full Stack Developer<option>AI/ML Engineer<option>Data Analyst<option>Product Manager</select></div>
+<div><label>Interviewer</label><select id="mode"><option value="panel">Panel (all three)<option value="technical_hr">Technical HR<option value="strict_manager">Strict Manager<option value="friendly_hr">Friendly HR</select></div>
+<div><label>Experience</label><select id="level"><option>Fresher<option>Junior<option>Intermediate</select></div>
+<div><label>Interview type</label><select id="itype"><option>Mixed<option>Technical<option>HR<option>Behavioral<option>Panel</select></div>
+<div><label>Difficulty</label><select id="diff"><option>Easy<option selected>Medium<option>Hard</select></div>
+<div><label>Duration (minutes)</label><select id="dur"><option>5<option selected>10<option>15<option>20</select></div>
+<div><label>Number of questions</label><select id="total"><option>5<option>10<option>15<option>20</select></div></div>
+<label>Resume (PDF, optional)</label><input type="file" id="pdf" accept=".pdf" onchange="upPdf(this)">
+<label>Job description (optional)</label><textarea id="jd" rows="3"></textarea>
+<p class="mute ui">Privacy: audio may be sent to a speech-to-text service; transcripts are stored in your local database and can be deleted from History. Scores are estimates. "Confidence" measures interview communication, not psychology.</p>
+<button class="p" id="go" onclick="begin()">Start interview</button> <span class="err" id="e1"></span></section>
+
+<section id="iv" class="hide"><div class="card">
+<div class="avatar" id="av">?</div><div class="ui" style="text-align:center;font-weight:600" id="pn"></div>
+<div class="q" id="qt"></div><div class="st" id="stat"></div>
+<div class="row"><button onclick="speak(cur.text)">Repeat question</button><button id="mic" class="p" onclick="toggleMic()">Speak</button><button id="skip" onclick="send(true)">Skip</button></div>
+<label>Your answer (live transcript, editable — or just type)</label><textarea id="tr" rows="4"></textarea>
+<div class="row"><button class="p" id="sub" onclick="send(false)">Submit answer</button></div>
+<div class="err" id="e2" style="text-align:center"></div>
+<div class="meta"><span id="qc"></span><span id="tm"></span></div><div class="bar"><i id="pg" style="width:0"></i></div></div>
+<div class="card hide ui" id="fb"></div></section>
+
+<section id="dev" class="hide card ui"></section><section id="report" class="hide"></section><section id="history" class="hide card"></section>
+</main><script>
+const $=id=>document.getElementById(id);let IV,cur,total,t0,timer,rec,chunks=[],recog,startRec,health={};
+const COL={technical_hr:'#3b6fd4',strict_manager:'#c2452f',friendly_hr:'#2f9e6b'};
+const ICON={technical_hr:'T',strict_manager:'M',friendly_hr:'F'};
+function show(x){['setup','iv','report','history','dev'].forEach(s=>$(s).classList.toggle('hide',s!==x))}
+async function api(p,o){let r;try{r=await fetch('/api'+p,o)}catch{throw Error('Cannot reach the server. Is the backend running?')}
+ if(!r.ok){let m='Something went wrong.';try{m=(await r.json()).detail||m}catch{}throw Error(typeof m=='string'?m:'Invalid input.')}return r}
+const J=b=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+api('/health').then(r=>r.json()).then(h=>{health=h;$('banner').textContent=(h.demo_mode?'Demo mode on (falls back to sample questions). ':'')+'Voice: '+h.tts}).catch(()=>$('banner').textContent='Backend not reachable.');
+let resumeText='';
+async function upPdf(i){if(!i.files[0])return;const f=new FormData();f.append('file',i.files[0]);try{resumeText=(await(await api('/resume',{method:'POST',body:f})).json()).text}catch(e){$('e1').textContent=e.message}}
+function status(t,mode){$('stat').textContent=t;$('av').className='avatar '+(mode||'')}
+async function begin(){$('e1').textContent='';$('go').disabled=true;try{
+ const b={candidate:$('cand').value.trim()||'Candidate',role:$('role').value,level:$('level').value,itype:$('itype').value,mode:$('mode').value,difficulty:$('diff').value,duration:+$('dur').value,total:+$('total').value,resume:resumeText,jd:$('jd').value};
+ IV=(await(await api('/interviews',J(b))).json()).id;show('iv');status('Thinking…','');
+ const r=await(await api(`/interviews/${IV}/start`,{method:'POST'})).json();total=r.total;t0=Date.now();
+ const lim=b.duration*60;clearInterval(timer);timer=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000),l=Math.max(0,lim-s);$('tm').textContent='Time left '+String(Math.floor(l/60)).padStart(2,'0')+':'+String(l%60).padStart(2,'0')},500);
+ ask(r.question)}catch(e){$('e1').textContent=e.message}finally{$('go').disabled=false}}
+function ask(q){cur=q;$('e2').textContent='';$('tr').value='';$('fb').classList.add('hide');
+ document.documentElement.style.setProperty('--pc',COL[q.persona]);$('av').textContent=ICON[q.persona];$('pn').textContent=q.persona_label;
+ $('qt').textContent=q.text;$('qc').textContent=`Question ${q.number} / ${total}`;$('pg').style.width=((q.number-1)/total*100)+'%';speak(q.text)}
+async function speak(t){speechSynthesis.cancel();status('Speaking…','speaking');
+ const done=()=>status('Your turn — press Speak or type','');
+ if(health.tts==='elevenlabs'){try{const r=await api('/tts',J({text:t}));const a=new Audio(URL.createObjectURL(await r.blob()));a.onended=done;await a.play();return}catch{}}
+ if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(t);u.onend=done;speechSynthesis.speak(u)}else done()}
+async function toggleMic(){
+ if(rec&&rec.state==='recording'){rec.stop();if(recog)recog.stop();return}
+ speechSynthesis.cancel();let s;try{s=await navigator.mediaDevices.getUserMedia({audio:true})}catch{$('e2').textContent='Microphone blocked. Allow access in your browser, or type your answer.';return}
+ chunks=[];rec=new MediaRecorder(s);rec.ondataavailable=e=>chunks.push(e.data);startRec=Date.now();
+ rec.onstop=()=>{s.getTracks().forEach(t=>t.stop());$('mic').textContent='Record again';$('mic').classList.remove('rec');status('Recorded. Edit the text if needed, then submit.','')};
+ rec.start();$('mic').textContent='Stop recording';$('mic').classList.add('rec');status('Listening…','listening');
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(SR){recog=new SR();recog.continuous=true;recog.interimResults=true;let base=$('tr').value;
+  recog.onresult=e=>{let x='';for(const r of e.results)x+=r[0].transcript;$('tr').value=(base+' '+x).trim()};recog.onerror=()=>{};recog.start()}}
+async function send(skip){$('e2').textContent='';if(rec&&rec.state==='recording'){rec.stop();if(recog)recog.stop();await new Promise(r=>setTimeout(r,300))}
+ const text=$('tr').value.trim(),dur=Math.max(5,(Date.now()-(startRec||Date.now()))/1000);
+ if(!skip&&!text&&!chunks.length){$('e2').textContent='Empty answer. Speak or type your answer first.';return}
+ ['sub','skip','mic'].forEach(i=>$(i).disabled=true);
+ try{let r;
+  if(!skip&&!text){status('Transcribing…','');const f=new FormData();f.append('file',new Blob(chunks,{type:'audio/webm'}),'a.webm');f.append('duration',dur);r=await(await api(`/interviews/${IV}/audio`,{method:'POST',body:f})).json();$('tr').value=r.transcript}
+  else{status('Analyzing…','');r=await(await api(`/interviews/${IV}/answer`,J({transcript:text,duration:skip?0:(startRec?dur:Math.max(10,text.split(' ').length/2.5)),skipped:skip}))).json()}
+  chunks=[];startRec=null;feedback(r.analysis);
+  if(r.done){status('Interview complete. Building report…','');setTimeout(()=>showReport(IV),1500)}else{status('Generating next question…','');setTimeout(()=>ask(r.next),1800)}
+ }catch(e){$('e2').textContent=e.message;status('','')}finally{['sub','skip','mic'].forEach(i=>$(i).disabled=false)}}
+function feedback(a){if(!a)return;const f=$('fb');f.classList.remove('hide');
+ f.innerHTML=`<b>Answer feedback</b> — content ${a.content}, communication ${a.communication}, structure ${a.structure.score}<br>
+ Estimated communication confidence: ${a.confidence}/100 · Tone: ${a.tone.label} (~${a.tone.certainty}% certain) · Fillers: ${a.fillers.count} (${a.fillers.per_min}/min${a.fillers.most_used?', most used "'+a.fillers.most_used+'"':''})<br>
+ Structure detected: ${a.structure.detected.join(', ')||'none'}${a.structure.missing.length?' · Missing: '+a.structure.missing.join(', '):''}<br><span class="mute">${a.feedback||''} ${a.filler_tip||''}</span>`}
+const bar=(n,v)=>`<div class="cat"><span>${n}</span><div class="bar"><i style="width:${v}%"></i></div><b>${v}</b></div>`;
+const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function showReport(id){show('report');$('report').innerHTML='<div class="card ui">Generating report…</div>';try{
+ const r=await(await api(`/interviews/${id}/report`)).json(),f=r.feedback,li=a=>(a||[]).map(x=>`<li>${esc(x)}</li>`).join('');
+ $('report').innerHTML=`<div class="card ui"><h2>Interview Performance Report</h2><span class="mute">${esc(r.candidate)} · ${esc(r.role)} · ${esc(r.type)} · ${r.date.slice(0,10)}</span>
+ <div class="big">${Math.round(r.overall)}<span class="mute" style="font-size:20px">/100</span></div>
+ ${Object.entries(r.categories).map(([k,v])=>bar(k,v)).join('')}
+ <p>Filler words: ${r.fillers.total} · ${r.fillers.per_min}/min · most used: ${esc(r.fillers.most_used||'—')} · Average pace: ${r.avg_wpm} wpm</p>
+ <p class="mute">${esc(r.disclaimer)}</p></div>
+ <div class="card ui"><h3>Strengths</h3><ul>${li(f.strengths)}</ul><h3>Areas to improve</h3><ul>${li(f.weaknesses)}</ul><h3>Recommendations</h3><ul>${li(f.recommendations)}</ul><h3>Improvement plan</h3><ul>${li(f.plan)}</ul><p>${esc(f.overall_feedback)}</p></div>
+ <div class="card ui"><h3>Score by question</h3>${r.questions.map(q=>bar('Q'+q.n+' '+q.persona.split(' ')[0],q.score)).join('')}</div>
+ ${r.questions.map(q=>`<div class="card ui"><b>Q${q.n} (${esc(q.persona)}):</b> ${esc(q.q)}<br><i>${esc(q.answer)}</i><p>Score ${q.score} · tone ${q.tone} · fillers ${q.fillers}</p><b>Good:</b> ${esc((q.good||[]).join('; ')||'—')}<br><b>Missing:</b> ${esc((q.missing||[]).join('; ')||'—')}<br><b>Better answer:</b> ${esc(q.better||'—')}</div>`).join('')}
+ <div class="row"><button class="p" onclick="window.print()">Download report (print to PDF)</button><button onclick="show('setup')">New interview</button></div>`}catch(e){$('report').innerHTML=`<div class="card err">${esc(e.message)}</div>`}}
+async function hist(){show('history');const h=await(await api('/interviews')).json();
+ $('history').innerHTML='<h2>History</h2>'+(h.length?`<table><tr><th>Date<th>Role<th>Type<th>Overall<th>Content<th>Comm.<th>Conf. est.<th>Status<th></tr>${h.map(i=>`<tr class="c" onclick="showReport(${i.id})"><td>${i.date.slice(0,10)}<td>${esc(i.role)}<td>${esc(i.mode)}<td>${i.overall??'—'}<td>${i.content??'—'}<td>${i.communication??'—'}<td>${i.confidence??'—'}<td>${i.status}<td><button onclick="event.stopPropagation();del(${i.id})">Delete</button></tr>`).join('')}</table>`:'<p class="mute">No interviews yet. Start one to see results here.</p>')}
+async function diversity(){show('dev');$('dev').textContent='Generating 10 questions per persona…';try{
+ const r=await(await api('/dev/persona-diversity?role='+encodeURIComponent($('role').value))).json(),m=r.metrics,N={technical_hr:'Technical HR',strict_manager:'Strict Manager',friendly_hr:'Friendly HR'};
+ $('dev').innerHTML=`<h2>Persona diversity — ${esc(r.role)}</h2><p><b>Score ${m.diversity_score}/100</b> · duplicates ${m.duplicates} · similar pairs ${m.similar_pairs} · category overlap ${m.category_overlap} · intent overlap ${m.intent_overlap} · persona mismatch ${m.persona_mismatch}<br><span class="mute">${esc(m.similarity_method)}. Role comes from the setup form.</span></p>
+ <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">${Object.entries(r.columns).map(([p,qs])=>`<div><h3 style="color:${COL[p]}">${N[p]}</h3><ol style="padding-left:18px;font-size:14px">${qs.map(q=>`<li>${esc(q.question)}<br><span class="mute">${q.category} · ${q.difficulty}</span></li>`).join('')}</ol></div>`).join('')}</div>`}catch(e){$('dev').textContent=e.message}}
+async function del(id){if(confirm('Delete this interview and its transcripts?')){await api('/interviews/'+id,{method:'DELETE'});hist()}}
+</script></body></html>

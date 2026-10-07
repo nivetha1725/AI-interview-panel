@@ -1,0 +1,9 @@
+export type Mode = "panel" | "technical_hr" | "strict_manager" | "friendly_hr";
+export interface Config { candidate: string; role: string; level: string; itype: string; mode: Mode; difficulty: string; duration: number; total: number; resume: string; jd: string }
+export interface Question { id: number; number: number; persona: string; persona_label: string; text: string; type: string; category?: string; difficulty: string; follow_up: boolean }
+export interface Analysis { words: number; fillers: { count: number; per_min: number; most_used: string | null } }
+export interface AnswerResult { done: boolean; analysis?: Analysis; next?: Question; transcript?: string }
+export interface Health { status: string; demo_mode: boolean; model: string; tts: string }
+export interface HistoryItem { id: number; date: string; role: string; type: string; mode: string; status: string; overall: number | null; content: number | null; communication: number | null; confidence: number | null }
+export interface ReportQ { n: number; persona: string; q: string; answer: string; score: number; content: number; communication: number; confidence: number; fillers: number; tone: string; good: string[]; missing: string[]; better: string; fillers_detail?: Record<string, number>; structure?: { detected?: string[]; missing?: string[]; score?: number; framework?: string }; duration?: number }
+export interface Report { candidate: string; role: string; type: string; date: string; overall: number; categories: Record<string, number>; fillers: { total: number; per_min: number; most_used: string | null }; filler_breakdown?: Record<string, number>; avg_wpm: number; avg_answer_sec?: number; questions: ReportQ[]; feedback: { strengths: string[]; weaknesses: string[]; recommendations: string[]; plan: string[]; overall_feedback: string }; disclaimer: string }

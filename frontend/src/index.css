@@ -1,0 +1,5 @@
+@import "tailwindcss";
+body{background:#fafaf9;color:#1c1917;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+@keyframes ring{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.8);opacity:0}}
+.ring-pulse{animation:ring 1.4s ease-out infinite}
+@media (prefers-reduced-motion:reduce){.ring-pulse{animation:none}}
